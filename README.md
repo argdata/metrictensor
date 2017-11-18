@@ -8,7 +8,8 @@ About the repository
 
 *Creators*: 
 Emmanuel Contreras-Campana, PhD <br />
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Christian Contreras-Campana, PhD
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Christian Contreras-Campana, PhD
 
 - July 2016
 
