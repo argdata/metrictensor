@@ -1,0 +1,5 @@
+# Ignore everything in this directory
+ctr
+
+# Ignore Mac OS hidden file
+.DS_Store
