@@ -7,7 +7,7 @@ About the repository
 **Graduates from Rutgers University** 
 
 *Creator*: 
-Emmanuel Contreras-Campana, PhD
+Emmanuel Contreras-Campana, PhD <br />
 Christian Contreras-Campana, PhD
 
 - July 2016
