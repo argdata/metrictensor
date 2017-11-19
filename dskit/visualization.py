@@ -66,6 +66,8 @@ random.seed(a=seed)
 # from IPython.core.interactiveshell import InteractiveShell
 from IPython.display import display
 
+from dskit import lay_out, label_encoder
+
 
 ## Plot categorical features for signal and background
 def plot_categorical_features(signal, background, columns=None, 
