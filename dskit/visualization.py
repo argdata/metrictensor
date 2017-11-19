@@ -893,6 +893,7 @@ def plot_validation_curve(models, X_train, X_test, y_train, y_test):
     ax.set_facecolor('white')
 
     for n, model in enumerate(models):
+        model = model.steps[-1][1]
         test_score = np.empty(len(model.estimators_))
         train_score = np.empty(len(model.estimators_))
         
