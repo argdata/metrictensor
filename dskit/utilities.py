@@ -4,18 +4,14 @@ import math
 import numpy as np
 import pandas as pd
 
-# Import panda library
-import pandas.core.common as com
-from pandas.tools import plotting
-from pandas.tools.plotting import scatter_matrix
-from pandas.core.index import Index
+from copy import deepcopy
 
 # Import scikit-learn
 from sklearn.preprocessing import (StandardScaler, RobustScaler, MinMaxScaler,
                                    LabelEncoder, OneHotEncoder)
 from sklearn.model_selection import ParameterGrid
 
-## Subplot lay out
+##  Number of subplots for lay out
 def lay_out(naxes):
     # determine number of rows and columns for figure
     f = lambda x: int(math.ceil(float(x)/2))
@@ -25,6 +21,19 @@ def lay_out(naxes):
     ncols = g(naxes)
     
     return [nrows, ncols]
+
+
+## Generate a list of models base on a set of hyper-parameters
+def model_grid_setup(estimator, param_grid):
+    models = []
+
+    for params in list(ParameterGrid(param_grid)):
+        model = estimator.set_params(**params)
+
+        model.fit(X_train, y_train)
+        models.append(deepcopy(model))
+
+    return models
 
 ## Label encoder
 def label_encoder(columns, X_train, X_test):

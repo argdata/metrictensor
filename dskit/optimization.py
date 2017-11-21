@@ -4,9 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
+import pandas
+
 # Import scikit-learn
 from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 
 # Fix random seed for reproducibility
@@ -15,8 +16,9 @@ random.seed(a=seed)
 
 
 ## Standard nested k-fold cross validation
-def nested_grid_search_cv(Classifier, X, y, outer_cv, inner_cv,
-                          param_grid, scoring="accuracy"):
+def nested_grid_search_cv(model, X, y, outer_cv, inner_cv,
+                          param_grid, scoring="accuracy",
+                          n_jobs=1):
     """
     Nested k-fold crossvalidation.
 
@@ -41,27 +43,36 @@ def nested_grid_search_cv(Classifier, X, y, outer_cv, inner_cv,
     # Set aside a hold-out test dataset for model evaluation
     for k, (training_samples, test_samples) in enumerate(outer_cv.split(X, y)):
 
-        # Training datasets
-        x_training = X[training_samples]
-        y_training = y.iloc[training_samples]
+        # x training and test datasets
+        if isinstance(X, pandas.core.frame.DataFrame):
+            x_train = X.iloc[training_samples]
+            x_test = X.iloc[test_samples]
+        else:  # in case of spare matrices
+            x_train = X[training_samples]
+            x_test = X[test_samples]
 
-        # Testing datasets
-        x_testing  = X[test_samples]
-        y_testing  = y.iloc[test_samples]
+        # y training and test datasets
+        if isinstance(y, pandas.core.frame.Series):
+            y_train = y.iloc[training_samples]
+            y_test = y.iloc[test_samples]
+        else: # in case of numpy arrays
+            y_train = y[training_samples]
+            y_test = y[test_samples]
 
         # Set up grid search configuration
-        cv = GridSearchCV(estimator=Classifier, param_grid=param_grid,
-                          cv=inner_cv, scoring=scoring, n_jobs=-1)
+        grid = GridSearchCV(estimator=model, param_grid=param_grid,
+                            cv=inner_cv, scoring=scoring, n_jobs=n_jobs)
 
         # Build classifier on best parameters using outer training set
         # Fit model to entire training dataset (i.e tuning & validation dataset)
-        print "%s-fold model fitting ..."%(k+1)
+        print "fold-%s model fitting ..." % (k+1)
 
         # Train on the training set
-        cv.fit(x_training, y_training)
+        grid.fit(x_train, y_train)
 
         # Evaluate
-        score = cv.score(x_testing, y_testing)
+        score = grid.score(x_test, y_test)
+
         outer_scores.append(score)
         print "\tModel validation score", score
 
@@ -70,10 +81,10 @@ def nested_grid_search_cv(Classifier, X, y, outer_cv, inner_cv,
 
     # Note: the scoring is being done without the weights associated with X
     # Fit model to entire training dataset (i.e tuning & validation dataset)
-    cv.fit(X, y)
-    print "Final fit completed"
+    print "Performing fit over entire training data\n"
+    grid.fit(X, y)
 
-    return cv
+    return grid
 
 
 ## Feature ranking

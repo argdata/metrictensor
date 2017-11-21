@@ -8,3 +8,5 @@ from visualization import (plot_categorical_features, plot_numerical_features,
                            plot_calibration_curve, plot_confusion_matrix)
 
 from optimization import nested_grid_search_cv
+
+from keras_model import create_model
