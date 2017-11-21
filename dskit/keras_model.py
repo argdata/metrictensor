@@ -7,7 +7,7 @@ from keras.regularizers import l1, l2
 ## Function to create model, required for KerasClassifier
 def create_model(nlayers=1, nneurons=100, dropout_rate=0.0,
                  l2_norm=1e-3, activation='relu', kernel_initializer='uniform',
-                 optimizer='adam', input_dim=None):
+                 optimizer='adam', input_dim=None, metric='accuracy'):
 
     # create model
     model = Sequential()
@@ -24,6 +24,6 @@ def create_model(nlayers=1, nneurons=100, dropout_rate=0.0,
                     activation='sigmoid', kernel_regularizer=l2(l2_norm)))
     # Compile model
     model.compile(loss='binary_crossentropy', optimizer=optimizer,
-                  metrics=['accuracy'])
+                  metrics=[metric])
 
     return model
