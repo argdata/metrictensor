@@ -13,10 +13,10 @@ Christian Contreras-Campana, PhD
 
 - November 2017
 
-This repository contains example jupyter notebooks. The dskit directory has 
-the data science visualization toolkit. You may store cvs files in the data 
-directory, Lastly, the model persistent files are meant to be stored in the 
-models directory.
+This repository contains an example jupyter notebook. The dskit directory has 
+the data science visualization, optimization, feature_selection, keras_model,
+and utilities toolkits. You may store cvs files in the data directory. Lastly, 
+the model persistent files are meant to be stored in the models directory.
 
 
 Installation
