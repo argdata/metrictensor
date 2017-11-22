@@ -46,7 +46,7 @@ python setup.py install
 2. Start Jupyter notebook or restart Jupyter notebook depending on your
 circumstance.
 
-3. Import the package ussing:
+3. Import the package using:
 ```
 from dskit import *
 ```
