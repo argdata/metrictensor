@@ -11,7 +11,7 @@ Emmanuel Contreras-Campana, PhD <br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Christian Contreras-Campana, PhD
 
-- July 2016
+- November 2017
 
 This repository contains example jupyter notebooks. The lib directory has 
 the data science visualization toolkit. You may store cvs files in the data 
