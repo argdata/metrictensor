@@ -43,7 +43,7 @@ These are the instructions on how to install and run local package:
 ```
 python setup.py install
 ```
-2. Start Jupyter notebook or Restart Jupyter notebook depending on your
+2. Start Jupyter notebook or restart Jupyter notebook depending on your
 circumstance.
 
 3. Import the package ussing:
