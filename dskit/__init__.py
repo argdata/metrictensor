@@ -1,5 +1,5 @@
 # Import dskit library
-from utilities import lay_out, label_encoder
+from utilities import lay_out, label_encoder, model_grid_setup
 
 from visualization import (plot_categorical_features, plot_numerical_features,
                            plot_correlation_matrix, plot_roc_curve,

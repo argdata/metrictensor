@@ -30,8 +30,8 @@ import sklearn
 
 from sklearn.calibration import calibration_curve, CalibratedClassifierCV
 
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import learning_curve
+from sklearn.model_selection import (cross_val_score, learning_curve,
+                                     validation_curve)
 
 from sklearn.metrics import (confusion_matrix, roc_auc_score, roc_curve, 
                              auc, average_precision_score, precision_score, 
@@ -287,7 +287,7 @@ def plot_categorical_features(signal, background, columns=None,
     # adjust spacing between subplots
     fig.subplots_adjust(wspace=args['wspace'], hspace=args['hspace'])
     
-    return plt.show()
+    return display(plt.show())
 
 
 ## Plot numerical features for signal and background
@@ -476,7 +476,7 @@ def plot_numerical_features(signal, background, columns=None, bins=50,
     # adjust spacing between subplots
     fig.subplots_adjust(wspace=args['wspace'], hspace=args['hspace'])
     
-    return plt.show()
+    return display(plt.show())
 
 
 ## Define linear correlation matrix
@@ -523,7 +523,7 @@ def plot_correlation_matrix(data, **kwds):
 
     plt.tight_layout()
 
-    return plt.show()
+    return display(plt.show())
 
 
 ## Compute ROC curve and area under the curve
@@ -657,7 +657,7 @@ def plot_roc_curve(models, X_train, X_test, y_train, y_test,
     frame = leg.get_frame()
     frame.set_facecolor('White')
 
-    return plt.show() 
+    return display(plt.show())
 
 
 ## Define precision-recall curve
@@ -753,7 +753,7 @@ def plot_precision_recall_curve(models, X_train, X_test, y_train, y_test):
     frame = leg.get_frame()
     frame.set_facecolor('White')
 
-    return plt.show()
+    return display(plt.show())
 
 
 # Learning curve
@@ -866,13 +866,46 @@ def plot_learning_curve(model, X_train, y_train,
 
     #plt.gca().invert_yaxis()
 
-    return plt.show()
+    return display(plt.show())
 
 
 ## Define validation plots
-def plot_validation_curve(models, X_train, X_test, y_train, y_test):
+def plot_validation_curve(models, X_train, y_train, param_range,
+                          param_name, cv=3, scoring="neg_log_loss",
+                          logx=False, n_jobs=1):
+    """
+    Draw histogram of the DataFrame's series comparing the distribution
+    in `signal` to `background`.
 
-    # check to see if models is a dictionary
+    Parameters
+    ----------
+    models : dictionary, shape = [n_models]
+    X : DataFrame, shape = [n_samples, n_classes]
+    y : DataFrame, shape = [n_classes]
+    param_range :
+
+    param_name :
+
+    cv :
+    scoring :
+    n_jobs :
+
+    Returns
+    -------
+    plot : matplotlib plot
+    """
+
+    """
+    Describe possible kwargs values
+    
+    Keys
+    ----------
+    """
+
+    # line width
+    lw = 2
+
+    # check to see if models is a list
     if not isinstance(models, list):
         models = [models]
 
@@ -893,38 +926,71 @@ def plot_validation_curve(models, X_train, X_test, y_train, y_test):
     ax.set_facecolor('white')
 
     for n, model in enumerate(models):
-        model = model.steps[-1][1]
-        test_score = np.empty(len(model.estimators_))
-        train_score = np.empty(len(model.estimators_))
-        
-        for j, pred in enumerate(model.staged_decision_function(X_test)):
-            test_score[j] = 1-roc_auc_score(y_test, pred)
-        
-        for k, pred in enumerate(model.staged_decision_function(X_train)):
-            train_score[k] = 1 - roc_auc_score(y_train, pred)
-        
-        best_iter = np.argmin(test_score)
-        learn = model.get_params()['learning_rate']
-        depth = model.get_params()['max_depth']
+        # validation scores
+        train_scores, test_scores = validation_curve(
+            model, X_train, y_train,
+            param_name=param_name,
+            param_range=param_range, cv=cv,
+            scoring=scoring, n_jobs=n_jobs)
 
-        test_line = plt.plot(test_score,
-                             label='learn=%.1f depth=%i (%.2f)'%(learn, depth,
-                                                                 test_score[best_iter]))
-        
-        colour = test_line[-1].get_color()
+        # mean train scores
+        train_scores_mean = np.mean(train_scores, axis=1)
+        train_scores_std  = np.std(train_scores, axis=1)
 
-        plt.plot(train_score, '--', color=colour)
+        # mean test scores
+        test_scores_mean  = np.mean(test_scores, axis=1)
+        test_scores_std   = np.std(test_scores, axis=1)
 
-        plt.axvline(x=best_iter, color=colour)
+        #best_iter = np.argmin(test_score)
+        #param1 = model.get_params()['learning_rate']
+        #param2 = model.get_params()['max_depth']
+        #label = 'Training (learn=%.1f, depth=%i, AUC %.2f)' % (learn,
+        #                                                       depth,
+        #                                                       train_scores_mean[best_iter])
 
+        # plot validation curve
+        if logx==True:
+            plt.semilogx(param_range, train_scores_mean, label="Training",
+                         color="darkorange", lw=lw)
+            plt.semilogx(param_range, test_scores_mean, label="Test",
+                         color="navy", lw=lw)
+        else:
+            plt.plot(train_scores_mean, '--', label="Training",
+                     color="darkorange", lw=lw)
+
+            test_line = plt.plot(test_scores_mean, label="Test")
+
+            #colour = test_line[-1].get_color()
+
+        plt.fill_between(param_range, train_scores_mean - train_scores_std,
+                         train_scores_mean + train_scores_std, alpha=0.2,
+                         color="darkorange", lw=lw)
+
+        plt.fill_between(param_range, test_scores_mean - test_scores_std,
+                         test_scores_mean + test_scores_std, alpha=0.2,
+                         color="navy", lw=lw)
+
+        #plt.axvline(x=best_iter, color=colour)
+
+    # plot title
     plt.title(title, fontsize=14)
 
-    plt.xlabel('Number of boosting iterations')
-    plt.ylabel('1 - AUC')
+    plt.xlabel(str(param_name).replace(name.lower()+'__',''))
+    plt.ylabel(scoring)
+
+    # x-axis range
+    plt.xlim([1, 10])
+
+    # y-axis range
+    #ylim_min = 0.95*min(train_scores_mean)
+    #ylim_max = 1.05*max(train_scores_mean)
+
+    #plt.ylim(ylim_min, ylim_max)
 
     plt.legend(loc='best', frameon=False, fancybox=True, fontsize=12)
 
-    return plt.show()
+    return display(plt.show())
+
 
 ## Defined overfitting plot
 def plot_overfitting(model, X_train, X_test, y_train, y_test, bins=50):
@@ -1045,7 +1111,7 @@ def plot_overfitting(model, X_train, X_test, y_train, y_test, bins=50):
     frame = leg.get_frame()
     frame.set_facecolor('White')
 
-    return plt.show()
+    return display(plt.show())
 
 
 ## Calibration curve (reliability curve)
@@ -1144,7 +1210,7 @@ def plot_calibration_curve(model, X_train, X_test, y_train, y_test,
 
     ##plt.tight_layout()
 
-    return plt.show()
+    return display(plt.show())
 
 
 ## Confusion matrix plot
@@ -1220,7 +1286,7 @@ def plot_confusion_matrix(model, X_train, X_test, y_train, y_test,
 
     plt.grid(False, which='both')
 
-    return plt.show()
+    return display(plt.show())
 
 
 ## Plot signal and background distributions for some variables

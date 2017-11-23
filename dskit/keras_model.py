@@ -4,6 +4,7 @@ from keras.layers import Dense
 from keras.layers import Dropout
 from keras.regularizers import l1, l2
 
+
 ## Function to create model, required for KerasClassifier
 def create_model(nlayers=1, nneurons=100, dropout_rate=0.0,
                  l2_norm=1e-3, activation='relu', kernel_initializer='uniform',
