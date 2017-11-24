@@ -55,7 +55,10 @@ def nested_grid_search_cv(model, X, y, outer_cv, inner_cv,
     """
 
     outer_scores = []
-    grid = GridSearchCV()
+
+    # Set up grid search configuration
+    grid =  GridSearchCV(estimator=model, param_grid=param_grid,
+                         cv=inner_cv, scoring=scoring, n_jobs=n_jobs)
 
     # Set aside a hold-out test dataset for model evaluation
     for k, (training_samples, test_samples) in enumerate(outer_cv.split(X, y)):
@@ -75,10 +78,6 @@ def nested_grid_search_cv(model, X, y, outer_cv, inner_cv,
         else: # in case of numpy arrays
             y_train = y[training_samples]
             y_test = y[test_samples]
-
-        # Set up grid search configuration
-        grid.set_params(estimator=model, param_grid=param_grid,
-                        cv=inner_cv, scoring=scoring, n_jobs=n_jobs)
 
         # Build classifier on best parameters using outer training set
         # Fit model to entire training dataset (i.e tuning & validation dataset)
@@ -104,9 +103,7 @@ def nested_grid_search_cv(model, X, y, outer_cv, inner_cv,
     return grid
 
 
-
-## TEST AREA
-# ---- Definite the objective class used to minimize on
+# Handles objective function for HyperOptimization
 class HyperOptObjective:
 
    # Class constructor initialize data members
@@ -150,9 +147,7 @@ class HyperOptObjective:
        return self.Classifier
 
 
-
-
-# ---- Handles objective function
+# Handles objective function for Scikit-learn optimization
 class SkOptObjective:
 
    # constuctor
@@ -185,8 +180,7 @@ class SkOptObjective:
        self.keys = keys
 
 
-
-# ---- Handles objective function
+# Handles objective function for BayesianOptimization 
 class bayesOptObjective:
    # Class constructor initialize data members
    def __init__(self, Classifier, X, y, n_folds=3, scoring='roc_auc', n_jobs=1):
