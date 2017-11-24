@@ -7,7 +7,24 @@ import pandas
 
 # Import scikit-learn
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import KFold, StratifiedKFold, ShuffleSplit
+from sklearn.model_selection import cross_val_score
 
+# Hyper-paramter tuning using HyperOpt library
+from hyperopt.pyll import scope
+from hyperopt import hp
+from hyperopt import fmin, Trials, STATUS_OK, tpe, space_eval
+
+# ---- Scikit-Learn Optimizer
+from skopt import gp_minimize, forest_minimize
+from skopt.plots import plot_convergence
+from skopt.plots import plot_evaluations
+
+# ---- Optimize bayesian
+from bayes_opt import BayesianOptimization
+
+# ---- Python utilities
+from collections import defaultdict, Counter
 
 # Fix random seed for reproducibility
 seed = 7
@@ -85,3 +102,128 @@ def nested_grid_search_cv(model, X, y, outer_cv, inner_cv,
     grid.fit(X, y)
 
     return grid
+
+
+
+## TEST AREA
+# ---- Definite the objective class used to minimize on
+class HyperOptObjective:
+
+   # Class constructor initialize data members
+   def __init__(self, X, y, n_folds=3, scoring='roc_auc', n_jobs=1):
+       self.X = X
+       self.y = y
+       self.seed = 42
+       self.n_folds= n_folds
+       self.cv = KFold(n_splits=self.n_folds, shuffle=True, random_state=self.seed)
+       self.scoring = scoring
+       self.n_jobs = n_jobs
+       self.best = 0
+
+   # Define the objective function
+   def __call__(self, params):
+       auc_score = self.hyperopt_train_test(params)
+
+       # Involving accuracy
+       #if auc_score > self.best:
+       #    self.best = acc
+       #print 'new best:', self.best, params
+       #return {'loss': -auc_score, 'status': STATUS_OK}
+       print('SCORE:', auc_score, params)
+       return {'loss': 1-auc_score, 'status': STATUS_OK }
+
+   # Handles the evaluation to be minimized
+   def hyperopt_train_test(self, params):
+       self.Classifier.set_params(**params)
+
+       #scoring = 'roc_auc'#None, 'accuracy'
+       score = cross_val_score(estimator=self.Classifier, X=self.X, y=self.y, cv=self.cv, scoring=self.scoring, n_jobs=self.n_jobs).mean()
+
+       # Note: hyperopt works by minimizing an objective function and sampling parameter values from various distributions.
+       # Since the goal is to maximize the AUC score, we will have hyperopt minimize 1 - AUC.
+       return 1 - score # or -score?
+
+
+   # Set the classifier algorithm
+   def setEstimator(self, Classifier):
+       self.Classifier = Classifier
+       return self.Classifier
+
+
+
+
+# ---- Handles objective function
+class SkOptObjective:
+
+   # constuctor
+   def __init__(self, X, y, n_folds=3, scoring='roc_auc'):
+       # Split development set into a train and test set
+       self.X = X
+       self.y = y
+       self.seed = 42
+       self.n_folds= n_folds
+       self.cv = KFold(n_splits=self.n_folds, shuffle=True, random_state=self.seed)
+       self.scoring = scoring
+
+   # objective function we want to minimize
+   def __call__(self, values):
+       # Build paramter list with updated values
+       params_dict = dict(zip(self.keys, values))
+
+       # Optimize hyper-parameters of classifier
+       self.clf.set_params(**params_dict)
+
+       # Cross-validation mean absolute error of a classifier as a function of its hyper-parameters
+       score = cross_val_score(self.clf, self.X, self.y, cv=self.cv, scoring=self.scoring, n_jobs=-1).mean()
+
+       return -score #1-score
+
+   def setEstimator(self, Classifier):
+       self.clf = Classifier
+
+   def paramKeys(self, keys):
+       self.keys = keys
+
+
+
+# ---- Handles objective function
+class bayesOptObjective:
+   # Class constructor initialize data members
+   def __init__(self, Classifier, X, y, n_folds=3, scoring='roc_auc', n_jobs=1):
+       self.X = X
+       self.y = y
+       self.seed = 42
+       self.n_folds= n_folds
+       self.cv = KFold(n_splits=self.n_folds, shuffle=True, random_state=self.seed)
+       self.scoring = scoring
+       self.n_jobs=n_jobs
+       self.Classifier = Classifier
+       self.hyper_parameter = {}
+
+
+   # Define the objective function
+   def __call__(self, **params):
+
+       for key, value in self.hyper_parameter.iteritems():
+
+           if self.get_type(key) == 'int':
+               params[key] = int(params[key])
+           elif self.get_type(key) == 'float':
+               params[key] = float(params[key])
+
+       self.Classifier.set_params(**params)
+
+       score = cross_val_score(estimator=self.Classifier, X=self.X, y=self.y,
+                               scoring=self.scoring, cv=self.cv, n_jobs=1).mean()
+
+       return score
+
+   def set_type(self, parameter_key, parameter_type):
+
+       self.hyper_parameter[parameter_key] = parameter_type
+
+       return self.hyper_parameter
+
+   def get_type(self, parameter_key):
+
+       return self.hyper_parameter[parameter_key]
