@@ -870,9 +870,10 @@ def plot_learning_curve(model, X_train, y_train,
 
 
 ## Define validation plots
-def plot_validation_curve(models, X_train, y_train, param_range,
-                          param_name, cv=3, scoring="neg_log_loss",
-                          logx=False, n_jobs=1):
+def plot_validation_curve(models, X_train, y_train, param_name,
+                          params, param_range, cv=3,
+                          scoring="neg_log_loss", logx=False,
+                          n_jobs=1):
     """
     Draw histogram of the DataFrame's series comparing the distribution
     in `signal` to `background`.
@@ -941,26 +942,33 @@ def plot_validation_curve(models, X_train, y_train, param_range,
         test_scores_mean  = np.mean(test_scores, axis=1)
         test_scores_std   = np.std(test_scores, axis=1)
 
-        #best_iter = np.argmin(test_score)
-        #param1 = model.get_params()['learning_rate']
-        #param2 = model.get_params()['max_depth']
-        #label = 'Training (learn=%.1f, depth=%i, AUC %.2f)' % (learn,
-        #                                                       depth,
-        #                                                       train_scores_mean[best_iter])
+        # extract information for legend
+        label = 'placeholder ('
+        for i, p_name in enumerate(params.keys()):
+            param = model.get_params()[p_name]
+            if i != len(params.keys())-1:
+                label = label+p_name.replace(name.lower()+'__','')+'=%.1f, ' % param
+            else:
+                label = label+p_name.replace(name.lower()+'__','')+'=%.1f' % param
+        label=label+')'
 
         # plot validation curve
         if logx==True:
-            plt.semilogx(param_range, train_scores_mean, label="Training",
+            plt.semilogx(param_range, train_scores_mean, '--',
+                         label=label.replace('placeholder','Training'),
                          color="darkorange", lw=lw)
-            plt.semilogx(param_range, test_scores_mean, label="Test",
+
+            plt.semilogx(param_range, test_scores_mean,
+                         label=label.replace('placeholder','Test'),
                          color="navy", lw=lw)
         else:
-            plt.plot(train_scores_mean, '--', label="Training",
+            plt.plot(param_range, train_scores_mean, '--',
+                     label=label.replace('placeholder','Training'),
                      color="darkorange", lw=lw)
 
-            test_line = plt.plot(test_scores_mean, label="Test")
-
-            #colour = test_line[-1].get_color()
+            plt.plot(param_range, test_scores_mean,
+                     label=label.replace('placeholder','Test'),
+                     color="navy", lw=lw)
 
         plt.fill_between(param_range, train_scores_mean - train_scores_std,
                          train_scores_mean + train_scores_std, alpha=0.2,
@@ -970,6 +978,7 @@ def plot_validation_curve(models, X_train, y_train, param_range,
                          test_scores_mean + test_scores_std, alpha=0.2,
                          color="navy", lw=lw)
 
+        #colour = test_line[-1].get_color()
         #plt.axvline(x=best_iter, color=colour)
 
     # plot title
@@ -979,13 +988,7 @@ def plot_validation_curve(models, X_train, y_train, param_range,
     plt.ylabel(scoring)
 
     # x-axis range
-    plt.xlim([1, 10])
-
-    # y-axis range
-    #ylim_min = 0.95*min(train_scores_mean)
-    #ylim_max = 1.05*max(train_scores_mean)
-
-    #plt.ylim(ylim_min, ylim_max)
+    plt.xlim([min(param_range), max(param_range)])
 
     plt.legend(loc='best', frameon=False, fancybox=True, fontsize=12)
 
