@@ -52,6 +52,9 @@ def nested_grid_search_cv(model, X, y, outer_cv, inner_cv,
     Returns
     -------
     Grid classifier: classifier re-fitted to full dataset
+
+    grid_search: GridSearchCV object
+        A post-fit (re-fitted to full dataset) GridSearchCV object where the estimator is a Pipeline.
     """
 
     outer_scores = []
