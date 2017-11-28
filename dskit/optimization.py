@@ -150,7 +150,8 @@ class HyperOptObjective:
        return self.Classifier
 
 
-# Handles objective function for Scikit-learn optimization
+# Handles objective function for Scikit-learn optimization: 
+# Bayesian optimization based on Gaussian process regression search (controlling the exploration-exploitation trade-off) 
 class SkOptObjective:
 
    # constuctor
