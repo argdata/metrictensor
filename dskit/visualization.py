@@ -241,7 +241,6 @@ def plot_categorical_features(signal, background, columns=None,
             bottom = 0
             width = 0.9 if args['width'] is None else args['width']
             shift = 0
-
         
         # display bar plot of categorical feature
         ax.bar(np.array(positions), BK, width=width, bottom=0.0, **kwargs)
