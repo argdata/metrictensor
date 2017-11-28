@@ -164,7 +164,7 @@ def plot_categorical_features(signal, background, columns=None,
         args['layout'] = lay_out(naxes)
     
     # set figzie of figure
-    if args['layout']==(1, 1):
+    if args['layout'] == (1, 1):
         args['figsize'] = (10, 6)
     else:
         args['figsize'] = (18, 6+7*(args['layout'][0]-1))
@@ -386,7 +386,7 @@ def plot_numerical_features(signal, background, columns=None, bins=50,
         args['layout'] = lay_out(naxes)
     
     # set figzie of figure
-    if args['layout']==(1, 1):
+    if args['layout'] == (1, 1):
         args['figsize'] = (10, 6)
     else:
         args['figsize'] = (18, 6+7*(args['layout'][0]-1))
@@ -417,7 +417,7 @@ def plot_numerical_features(signal, background, columns=None, bins=50,
         high = max(sg_val.max(), bk_val.max())
 
         # determine step size of discrete numerical feature
-        if discrete==True:
+        if discrete is True:
             uniq_lst = sorted(set(sg_val.tolist()+bk_val.tolist()))
             step = abs(uniq_lst[1]-uniq_lst[0])
             high = high + step
@@ -476,53 +476,6 @@ def plot_numerical_features(signal, background, columns=None, bins=50,
     # adjust spacing between subplots
     fig.subplots_adjust(wspace=args['wspace'], hspace=args['hspace'])
     
-    return display(plt.show())
-
-
-## Define linear correlation matrix
-# http://www.statisticssolutions.com/correlation-pearson-kendall-spearman/
-# Question: Which correlation method to apply
-def plot_correlation_matrix(data, **kwds):
-    """
-    To calculate pairwise correlation between features.
-    
-    Extra arguments are passed on to DataFrame.corr()
-    """
-
-    if (data['clicks'] > 0).all(axis=0):
-        label = "only clicks"
-        data = data.drop(labels="clicks", axis=1, inplace=False)
-    elif (data['clicks'] < 1).all(axis=0):
-        label = "only non-clicks"
-        data = data.drop(labels="clicks", axis=1, inplace=False)
-    else:
-        label = "all"
-    
-    # Add colorbar, make sure to specify tick locations to match desired ticklabels
-    labels = data.corr(**kwds).columns.values
-    
-    fig, ax1 = plt.subplots(ncols=1, figsize=(8, 7))
-    ax1.set_title("Correlations: " + label)
-    
-    args = {"annot":True, "ax": ax1, "vmin": 0, "vmax":1, "annot_kws": {"size": 8},
-            "cmap": plt.get_cmap("Blues", 20)}
-
-    # Correlations are calculated with .corr() method
-    sns.heatmap(data.corr(method="spearman"), **args)
-    
-    for ax in (ax1,):
-        # shift location of ticks to center of the bins
-        ax.set_xticks(np.arange(len(labels))+0.5, minor=False)
-        ax.set_yticks(np.arange(len(labels))+0.5, minor=False)
-
-        ax.set_xticklabels(labels, minor=False, ha="right", rotation=70)
-        ax.set_yticklabels(np.flipud(labels), minor=False)
-    
-    plt.yticks(rotation=0)
-    plt.xticks(rotation=90)
-
-    plt.tight_layout()
-
     return display(plt.show())
 
 
@@ -597,7 +550,7 @@ def plot_roc_curve(models, X_train, X_test, y_train, y_test,
         print("\tScore (i.e. accuracy) of test dataset: {:.5f}"
               .format(model.score(X_test, y_test)))
 
-        if n_folds!=0:
+        if n_folds != 0:
             if sample_weight_flag:
                 weights = {name.lower()+'__sample_weight': sample_weight_dev}
             else:
@@ -643,6 +596,7 @@ def plot_roc_curve(models, X_train, X_test, y_train, y_test,
 
     title = "Receiver operating characteristic ({} samples)".format(total)
 
+    # plot title
     plt.title(title, fontsize=14)
 
     plt.xlim([0.0, 1.0])
@@ -739,6 +693,7 @@ def plot_precision_recall_curve(models, X_train, X_test, y_train, y_test):
              label='Luck (AUC = %0.3f)' % ratio)
 
 
+    # plot title
     plt.title('Precision-Recall curve', fontsize=14)
 
     plt.xlim([-0.05, 1.05])
@@ -843,7 +798,7 @@ def plot_learning_curve(model, X_train, y_train,
     plt.plot(train_sizes, test_scores_mean, 'o-', color="g",
              label="Cross-validation score")
 
-
+    # plot title
     plt.title(title, fontsize=14)
 
     # sizes the window for readability and displays the plot
@@ -953,7 +908,7 @@ def plot_validation_curve(models, X_train, y_train, param_name,
         label=label+')'
 
         # plot validation curve
-        if logx==True:
+        if logx is True:
             plt.semilogx(param_range, train_scores_mean, '--',
                          label=label.replace('placeholder','Training'),
                          color="darkorange", lw=lw)
@@ -1272,6 +1227,7 @@ def plot_confusion_matrix(model, X_train, X_test, y_train, y_test,
 
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
 
+    # plot title
     plt.title(title, fontsize=14)
 
     tick_marks = np.arange(len(columns))
@@ -1377,7 +1333,7 @@ def signal_background(signal, background, column=None, grid=True,
             SG.update(sg)
             BK.update(bk)
 
-            if normed==1:
+            if normed == 1:
                 SG = SG/SG.sum(axis=1)
                 BK = BK/BK.sum(axis=1)
 
@@ -1512,7 +1468,7 @@ def signal_background_plot(data, target = None, features=None, bins=10,
             SG.update(sg)
             BK.update(bk)
 
-            if normed==1:
+            if normed == 1:
                 SG = SG/SG.sum(axis=1)
                 BK = BK/BK.sum(axis=1)
 
