@@ -33,6 +33,8 @@ def plot_chi2_matrix(data, columns, alpha=0.95, p_value=False):
     plot : matplotlib plot
     """
 
+    cols = []
+
     args = {'annot': True, 'ax': None, 'annot_kws': {'size': 10},
             'cmap': plt.get_cmap('Blues', 20)}
 
@@ -40,10 +42,15 @@ def plot_chi2_matrix(data, columns, alpha=0.95, p_value=False):
     chi2_alpha_matrix = pd.DataFrame()
     delta_chi2_matrix = pd.DataFrame()
 
+    # produce upper matrix triangle including diagonal elements
+    for c in list(itertools.product(columns, repeat=2)):
+        if (c[1], c[0]) not in cols:
+            cols.append(c)
+
     # create blank canvas
     fig, ax = plt.subplots(ncols=1, figsize=(16, 12))
 
-    for col1, col2 in itertools.product(columns, repeat=2):
+    for col1, col2 in cols:
         # calculate contingency table
         contingency_table = pd.crosstab(index=data[col1].values,
                                         columns=data[col2].values)
@@ -55,17 +62,27 @@ def plot_chi2_matrix(data, columns, alpha=0.95, p_value=False):
         chi2, p, dof, expected = scipy.stats.chi2_contingency(contingency_table,
                                                               correction=False)
 
+        # fill upper matrix triangle
         if p_value is True:
-            chi2_matrix.loc[col1, col2] = p
+            chi2_matrix.loc[col1, col2] = p if p > 0.000001 else 0
         else:
             chi2_matrix.loc[col1, col2] = chi2
+
+        # fill lower matrix triangle
+        if col1 != col2:
+            chi2_matrix.loc[col2, col1] = chi2_matrix.loc[col1, col2]
 
         # calculate chi2 critical score for the given
         # degree of freedom of the contingency table
         # note: df = (nrows -1)*(ncols -1)
         df = np.prod(contingency_table.shape - np.array([1, 1]))
 
+        # fill upper matrix triangle
         chi2_alpha_matrix.loc[col1, col2] = scipy.stats.chi2.ppf(alpha, df)
+
+        # fill lower matrix triangle
+        if col1 != col2:
+            chi2_alpha_matrix.loc[col2, col1] = chi2_alpha_matrix.loc[col1, col2]
 
         # calculate delta chi2 between data and critical
         delta_chi2_matrix = (chi2_matrix - chi2_alpha_matrix)
