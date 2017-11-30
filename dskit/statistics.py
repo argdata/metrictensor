@@ -18,7 +18,8 @@ from IPython.display import display
 def plot_chi2_matrix(data, columns, alpha=0.95, p_value=False):
     """
     To calculate pairwise chi2 statistic between features.
-        Parameters
+
+    Parameters
     ----------
     data : pandas dataframe
     columns : list
