@@ -2,6 +2,8 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 import seaborn as sns
 
 # Import scipy
@@ -131,6 +133,95 @@ def plot_chi2_matrix(data, columns, alpha=0.95, p_value=False):
 
     return display(plt.show())
 
+
+# f one way boxplot
+def plot_f_oneway(data, catcol, numcol,alpha=0.95):
+    """
+    To calculate pairwise f statistic between features.
+    
+    Parameters
+    ----------
+    data : pandas dataframe
+    columns : list
+    alpha : float, default 0.95
+        significance level
+    p_value : boolean, default False
+        If true report p-values else report the difference
+        between chi2 of data and chi2 critical at alpha level
+        
+    the Fligner-Killeen:med X^2 test statistic.
+    Returns
+    -------
+    plot : matplotlib plot
+    """
+
+    samples = []
+        
+    levels = data[catcol].unique()
+    
+    args = {'annot': True, 'ax': None, 'annot_kws': {'size': 10},
+            'cmap': plt.get_cmap('Blues', 20)}
+
+    for ls in levels:
+        if isinstance(ls, str):
+            qry = catcol+'=='+'"%s"' % ls
+        else:
+            qry = catcol+'=='+str(ls)
+
+        samples.append(data.query(qry)[numcol])
+
+    # calculate f score and p-value for data
+    f_statistic, p_value1 = scipy.stats.f_oneway(*samples)
+    fk_statistic, p_value2 = scipy.stats.fligner(*samples)
+
+    # format p-values
+    p_value1 = p_value1 if p_value1 > 0.000001 else 0
+    p_value2 = p_value2 if p_value2 > 0.000001 else 0
+    
+    # calculate f critical for the
+    # given degree of freedoms
+    # note: dfn = K-1, dfd = N-K
+    dfn = data[catcol].unique().shape[0]-1
+    dfd = data.shape[0]-levels.shape[0]
+
+    f_critical = scipy.stats.f.ppf(0.95, dfn, dfd)
+        
+    # plot f scores
+    title = 'Boxplot (one-way ANOVA)'
+    ax = data.boxplot(column=numcol, by=catcol,
+                      figsize=(8, 6))
+
+    # plot title
+    plt.title(title, fontsize=14)
+    plt.suptitle('')
+
+    plt.xlabel(ax.xaxis.get_label_text(), fontsize=12)
+    plt.ylabel(numcol, fontsize=12)
+
+    # set x-axis tick label font size
+    for tick in ax.xaxis.get_major_ticks():
+        tick.label.set_fontsize(12)
+
+    # set y-axis tick label font size
+    for tick in ax.yaxis.get_major_ticks():
+        tick.label.set_fontsize(12)
+
+    f_score = '{0:.6g}'.format(f_statistic)
+    f_critical = '{0:.6g}'.format(f_critical)
+    p_value1 = '{0:.6g}'.format(p_value1)
+    p_value2 = '{0:.6g}'.format(p_value2)
+    
+    label = 'f score (f_critical): %s (%s)' % (f_score, f_critical)
+    f_patch = mpatches.Patch(label=label)
+    
+    label = 'f p-value (fk p-value): %s (%s)' % (p_value1, p_value2)
+    p_values_patch = mpatches.Patch(label=label)
+
+    plt.legend(handles=[f_patch, p_values_patch],
+               loc='lower center', frameon=False,
+               fancybox=True, fontsize=12)
+    
+    return display(plt.show())
 
 ## Define linear correlation matrix
 # http://www.statisticssolutions.com/correlation-pearson-kendall-spearman/
