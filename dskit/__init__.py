@@ -9,6 +9,7 @@ from visualization import (plot_categorical_features, plot_numerical_features,
 
 from optimization import nested_grid_search_cv
 
-from statistics import plot_chi2_matrix, plot_correlation_matrix
+from statistics import (plot_chi2_matrix, plot_f_oneway,
+                        plot_correlation_matrix)
 
 from keras_model import create_model
