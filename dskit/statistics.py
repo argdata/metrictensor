@@ -196,8 +196,10 @@ def plot_f_oneway(data, catcol, numcol,alpha=0.95):
                               figsize=(8, 6), grid=False, patch_artist=True,
                               return_type='both')
 
-    ax = bp.values[0].ax
-    lines = bp.values[0].lines
+    # bp is a pandas Index object that contains
+    # a pandas Boxplot object
+    ax = bp.values[0].ax # matplotlib axis object
+    lines = bp.values[0].lines # dictionary object
 
     # change boxes color
     for item in lines['boxes']:
