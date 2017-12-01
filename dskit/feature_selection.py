@@ -21,7 +21,7 @@ def extract_feature_selected(clf, X_train, y_train):
     clf.fit(X_train, y_train)
 
     select_indices = clf.named_steps['SELECT'].transform(
-           np.arange(len(X_train.columns)).reshape(1, -1))
+           np.arange(len(X_train.columns)).values.reshape(1, -1))
 
     feature_names = X_train.columns[select_indices]
 

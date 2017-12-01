@@ -138,7 +138,7 @@ def plot_chi2_matrix(data, columns, alpha=0.95, p_value=False):
 def plot_f_oneway(data, catcol, numcol,alpha=0.95):
     """
     To calculate pairwise f statistic between features.
-    
+
     Parameters
     ----------
     data : pandas dataframe
@@ -148,7 +148,7 @@ def plot_f_oneway(data, catcol, numcol,alpha=0.95):
     p_value : boolean, default False
         If true report p-values else report the difference
         between chi2 of data and chi2 critical at alpha level
-        
+
     the Fligner-Killeen:med X^2 test statistic.
     Returns
     -------
@@ -156,12 +156,16 @@ def plot_f_oneway(data, catcol, numcol,alpha=0.95):
     """
 
     samples = []
-        
+
     levels = data[catcol].unique()
-    
+
+    base_color = '#539caf'
+    median_color = '#297083'
+
     args = {'annot': True, 'ax': None, 'annot_kws': {'size': 10},
             'cmap': plt.get_cmap('Blues', 20)}
 
+    # check to see if level is of type string or not
     for ls in levels:
         if isinstance(ls, str):
             qry = catcol+'=='+'"%s"' % ls
@@ -177,7 +181,7 @@ def plot_f_oneway(data, catcol, numcol,alpha=0.95):
     # format p-values
     p_value1 = p_value1 if p_value1 > 0.000001 else 0
     p_value2 = p_value2 if p_value2 > 0.000001 else 0
-    
+
     # calculate f critical for the
     # given degree of freedoms
     # note: dfn = K-1, dfd = N-K
@@ -185,11 +189,40 @@ def plot_f_oneway(data, catcol, numcol,alpha=0.95):
     dfd = data.shape[0]-levels.shape[0]
 
     f_critical = scipy.stats.f.ppf(0.95, dfn, dfd)
-        
+
     # plot f scores
-    title = 'Boxplot (one-way ANOVA)'
-    ax = data.boxplot(column=numcol, by=catcol,
-                      figsize=(8, 6))
+    title = 'One-way ANOVA'
+    bp = pd.DataFrame.boxplot(data, column=numcol, by=catcol,
+                              figsize=(8, 6), grid=False, patch_artist=True,
+                              return_type='both')
+
+    ax = bp.values[0].ax
+    lines = bp.values[0].lines
+
+    # change boxes color
+    for item in lines['boxes']:
+        item.set_color(base_color)
+
+    # change fliers color
+    for item in lines['fliers']:
+        item.set_color(base_color)
+
+    # change medians color
+    for item in lines['medians']:
+        item.set_color(median_color)
+
+    # change means line color
+    for item in lines['means']:
+        item.set_color(median_color)
+
+    # change whiskers color
+    for item in lines['whiskers']:
+        item.set_color(base_color)
+        item.set_linestyle('--')
+
+    # change caps color
+    for item in lines['caps']:
+        item.set_color(base_color)
 
     # plot title
     plt.title(title, fontsize=14)
@@ -210,17 +243,20 @@ def plot_f_oneway(data, catcol, numcol,alpha=0.95):
     f_critical = '{0:.6g}'.format(f_critical)
     p_value1 = '{0:.6g}'.format(p_value1)
     p_value2 = '{0:.6g}'.format(p_value2)
-    
-    label = 'f score (f_critical): %s (%s)' % (f_score, f_critical)
-    f_patch = mpatches.Patch(label=label)
-    
-    label = 'f p-value (fk p-value): %s (%s)' % (p_value1, p_value2)
-    p_values_patch = mpatches.Patch(label=label)
 
-    plt.legend(handles=[f_patch, p_values_patch],
+    label = 'f score: %s' % (f_score)
+    f_score_patch = mpatches.Patch(label=label, color=base_color)
+
+    label = 'f critical: %s' % (f_critical)
+    f_critical_patch = mpatches.Patch(label=label, color=base_color)
+
+    label = 'f p-value (fk p-value): %s (%s)' % (p_value1, p_value2)
+    p_values_patch = mpatches.Patch(label=label, color=base_color)
+
+    plt.legend(handles=[f_score_patch, f_critical_patch, p_values_patch],
                loc='lower center', frameon=False,
                fancybox=True, fontsize=12)
-    
+
     return display(plt.show())
 
 ## Define linear correlation matrix
