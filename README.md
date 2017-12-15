@@ -50,3 +50,8 @@ circumstance.
 ```
 from dskit import *
 ```
+
+4. Additional python libraries that may be required can be installed using:
+```
+pip install -r requirements.txt
+```
