@@ -25,7 +25,7 @@ Installation
 The data science toolkit repository may be install using pip.
 Use the following command:
 ```
-pip install -e git+https://github.com/ecampana/dskit#egg=dskit --process-dependency-links
+pip install -e git+https://github.com/ecampana/metrictensor#egg=metrictensor --process-dependency-links
 ```
 
 Development
@@ -34,7 +34,7 @@ Development
 For the purposes of code development the pip install version will
 need to be removed. Use the following command:
 ```
-pip uninstall dskit
+pip uninstall metrictensor
 ```
 Then a local copy of the git repository will need to be checked out.
 These are the instructions on how to install and run local package:
