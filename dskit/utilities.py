@@ -25,13 +25,12 @@ def lay_out(naxes):
 
 
 ## Generate a list of models base on a set of hyper-parameters
-def model_grid_setup(estimator, X_train, y_train, param_grid):
+def model_grid_setup(estimator, param_grid):
     models = []
 
     for params in list(ParameterGrid(param_grid)):
         model = estimator.set_params(**params)
 
-        model.fit(X_train, y_train)
         models.append(deepcopy(model))
 
     return models

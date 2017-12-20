@@ -825,7 +825,7 @@ def plot_learning_curve(model, X_train, y_train,
 
 ## Define validation plots
 def plot_validation_curve(models, X_train, y_train, param_name,
-                          params, param_range, cv=3,
+                          param_range, param_grid, cv=3,
                           scoring="neg_log_loss", logx=False,
                           n_jobs=1):
     """
@@ -898,9 +898,9 @@ def plot_validation_curve(models, X_train, y_train, param_name,
 
         # extract information for legend
         label = 'placeholder ('
-        for i, p_name in enumerate(params.keys()):
+        for i, p_name in enumerate(param_grid.keys()):
             param = model.get_params()[p_name]
-            if i != len(params.keys())-1:
+            if i != len(param_grid.keys())-1:
                 label = label+p_name.replace(name.lower()+'__','')+'=%.1f, ' % param
             else:
                 label = label+p_name.replace(name.lower()+'__','')+'=%.1f' % param
@@ -1011,7 +1011,7 @@ def plot_overfitting(model, X_train, X_test, y_train, y_test, bins=50):
     # Signal training histogram
     hist_sig_train, bin_edges = np.histogram(y_scores[0], bins=bin_edges_low_high)
 
-    hist_sig_train = hist_sig_train/sum(hist_sig_train)
+    hist_sig_train = hist_sig_train / np.sum(hist_sig_train, dtype=np.float32)
 
     plt.bar(bin_edges[:-1], hist_sig_train, width=width, color='r', alpha=0.5,
             label='signal (train)')
@@ -1019,7 +1019,7 @@ def plot_overfitting(model, X_train, X_test, y_train, y_test, bins=50):
     # Background training histogram
     hist_bkg_train, bin_edges = np.histogram(y_scores[1], bins=bin_edges_low_high)
 
-    hist_bkg_train = hist_bkg_train/sum(hist_bkg_train)
+    hist_bkg_train = hist_bkg_train / np.sum(hist_bkg_train, dtype=np.float32)
 
     plt.bar(bin_edges[:-1], hist_bkg_train, width=width,
             color='steelblue', alpha=0.5, label='background (train)')
@@ -1027,21 +1027,20 @@ def plot_overfitting(model, X_train, X_test, y_train, y_test, bins=50):
     # Signal test histogram
     hist_sig_test, bin_edges = np.histogram(y_scores[2], bins=bin_edges_low_high)
 
-    hist_sig_test = hist_sig_test/sum(hist_sig_test)
-    scale = len(y_scores[2]) / sum(hist_sig_test)
+    hist_sig_test = hist_sig_test / np.sum(hist_sig_test, dtype=np.float32)
+    scale = len(y_scores[2]) / np.sum(hist_sig_test, dtype=np.float32)
     err = np.sqrt(hist_sig_test * scale) / scale
-    center = (bin_edges[:-1] + bin_edges[1:]) / 2
 
-    plt.errorbar(center, hist_sig_test, yerr=err, fmt='o', c='r', label='signal (test)')
+    plt.errorbar(bin_edges[:-1], hist_sig_test, yerr=err, fmt='o', c='r', label='signal (test)')
 
     # Background test histogram
     hist_bkg_test, bin_edges = np.histogram(y_scores[3], bins=bin_edges_low_high)
 
-    hist_bkg_test = hist_bkg_test/sum(hist_bkg_test)
-    scale = len(y_scores[3]) / sum(hist_bkg_test)
+    hist_bkg_test = hist_bkg_test / np.sum(hist_bkg_test, dtype=np.float32)
+    scale = len(y_scores[3]) / np.sum(hist_bkg_test, dtype=np.float32)
     err = np.sqrt(hist_bkg_test * scale) / scale
 
-    plt.errorbar(center, hist_bkg_test, yerr=err, fmt='o', c='steelblue', #range=low_high,
+    plt.errorbar(bin_edges[:-1], hist_bkg_test, yerr=err, fmt='o', c='steelblue',
                  label='background (test)')
 
     # Estimate ks-test and p-values as an indicator of overtraining of fit model
@@ -1053,8 +1052,6 @@ def plot_overfitting(model, X_train, X_test, y_train, y_test, bins=50):
     #b_ks, b_pv = ks_weighted_2samp(y_scores[1], y_scores[3],
     #                               background_sample_weight_train,
     #                               background_sample_weight_test)
-
-    name = filter(str.isalnum, str(type(model)).split(".")[-1])
 
     ax.set_title("%s: sig (bkg)\nks: %0.3f (%0.3f)\np-value: %0.3f (%0.3f)"
                  % (name, s_ks, b_ks, s_pv, b_pv), fontsize=14)
